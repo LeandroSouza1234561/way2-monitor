@@ -1,4 +1,4 @@
-# Way2 Monitor – Complexo GNA
+# Way2 Monitor – GNA
 
 Painel executivo em tempo real hospedado no **GitHub Pages** com proxy na **Vercel**.
 
