@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/proxy.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/proxy.js" }
+  ],
+  "env": {
+    "WAY2_USER": "leandro.souzagna",
+    "WAY2_PASS": "Mudar@2026"
+  }
+}

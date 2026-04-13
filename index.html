@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Painel Executivo de Geração – Complexo GNA</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Exo 2',sans-serif;background:radial-gradient(ellipse 120% 80% at 50% -10%,#1c2e4a 0%,#0e1a2e 35%,#080d16 100%);color:#c8d8e8}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* LOADING */
+#ls{position:fixed;inset:0;background:radial-gradient(ellipse 120% 80% at 50% -10%,#1c2e4a 0%,#0e1a2e 35%,#080d16 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:10px}
+.ls-t{font-family:'Orbitron',monospace;font-size:38px;font-weight:900;letter-spacing:8px;color:#e8720c;text-shadow:0 0 40px rgba(232,114,12,.5)}
+.ls-s{font-size:10px;letter-spacing:4px;color:#2a3d55;margin-bottom:24px;text-transform:uppercase}
+.ls-sp{width:36px;height:36px;border:2px solid #1a2a3a;border-top-color:#e8720c;border-radius:50%;animation:spin .8s linear infinite}
+.ls-m{font-size:12px;color:#2a3d55;margin-top:8px;letter-spacing:1px}
+
+/* APP */
+#app{display:none;height:100vh;flex-direction:column}
+
+/* TOPO */
+.topo{background:linear-gradient(180deg,#080c14 0%,#0b1220 100%);border-bottom:1px solid #1a2e48;padding:8px 24px 7px;flex-shrink:0}
+.topo-titulo{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:4px;text-transform:uppercase;text-align:center;color:#d0dff0;text-shadow:0 0 30px rgba(80,140,220,.2);margin-bottom:5px}
+.topo-barra{display:flex;align-items:center;justify-content:space-between;font-size:10px}
+.topo-sync{display:flex;align-items:center;gap:6px;color:#2a4060;letter-spacing:1px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;animation:blink 1.5s infinite}
+#clk{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;color:#38bdf8}
+.status-wrap{display:flex;align-items:center;gap:6px;color:#2a4060;font-size:10px}
+.status-barra{width:60px;height:5px;background:#0f1c2e;border-radius:2px;overflow:hidden;border:1px solid #1a2e48}
+.status-fill{height:100%;background:linear-gradient(90deg,#1a3a6a,#38bdf8)}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:1fr 248px 1fr;flex:1;overflow:hidden;min-height:0}
+
+/* LADO */
+.lado{display:flex;flex-direction:column;padding:10px 12px;gap:7px;overflow-y:auto}
+.lado::-webkit-scrollbar{width:3px}
+.lado::-webkit-scrollbar-thumb{background:#1a2e48;border-radius:2px}
+
+/* HEADER COMPLEXO */
+.cx-hdr{text-align:center;padding:8px 16px;font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-radius:4px;margin-bottom:2px}
+.cx-hdr.gna1{color:#6aaad8;background:rgba(30,70,130,.15);border:1px solid rgba(50,100,180,.25);text-shadow:0 0 15px rgba(100,170,230,.3)}
+.cx-hdr.gna2{color:#fff;background:linear-gradient(135deg,#a05000 0%,#e8720c 40%,#f08030 60%,#c06010 100%);border:1px solid #c86000;text-shadow:0 1px 3px rgba(0,0,0,.6);box-shadow:0 2px 12px rgba(232,114,12,.3)}
+
+/* TURBINA */
+.tc{background:linear-gradient(145deg,rgba(16,26,42,.95),rgba(10,16,28,.95));border:1px solid #192840;border-radius:8px;padding:10px 13px;position:relative;overflow:hidden}
+.tc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.tc.gas::after{background:linear-gradient(90deg,transparent,#3a6aaa,#5b9bd5,#3a6aaa,transparent)}
+.tc.vapor::after{background:linear-gradient(90deg,transparent,#a05000,#e8720c,#a05000,transparent)}
+.tc.gas2::after{background:linear-gradient(90deg,transparent,#c06000,#f08030,#e8720c,#f08030,#c06000,transparent)}
+.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.tc-tipo{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2a4060;font-weight:600}
+.tc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tc-nome{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#3a6080;margin-bottom:1px}
+.tc-mw{font-family:'Orbitron',monospace;font-size:30px;font-weight:700;line-height:1;letter-spacing:-1px}
+.tc-un{font-size:11px;color:#2a4060;margin-left:4px;font-family:'Exo 2',sans-serif;font-weight:400}
+.tc-bar-bg{margin-top:7px;height:2px;background:rgba(255,255,255,.05);border-radius:1px;overflow:hidden}
+.tc-bar{height:100%;border-radius:1px;transition:width .9s ease}
+
+/* STATUS */
+.s-on{background:#22c55e}.s-of{background:#ef4444}.s-ld{background:#f59e0b;animation:blink 1s infinite}
+.v-on{color:#d0e8ff}.v-of{color:#ef4444}.v-ld{color:#f59e0b}
+.b-on{background:linear-gradient(90deg,#15803d,#22c55e)}.b-of{background:#ef4444}.b-ld{background:#f59e0b}
+
+/* MINI CHART */
+.mini-chart{background:rgba(6,10,18,.8);border:1px solid #16243a;border-radius:6px;padding:7px 10px}
+.mc-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2a4060;margin-bottom:4px}
+.mc-dest{font-family:'Orbitron',monospace;font-size:12px;color:#e8720c;margin-bottom:4px}
+
+/* CENTRO */
+.centro{background:linear-gradient(180deg,#070b14,#050910);border-left:1px solid #16243a;border-right:1px solid #16243a;display:flex;flex-direction:column;align-items:center;padding:10px;gap:7px;overflow-y:auto}
+.centro::-webkit-scrollbar{width:3px}
+.centro::-webkit-scrollbar-thumb{background:#1a2e48}
+
+/* TOTAL */
+.total-box{width:100%;background:linear-gradient(145deg,#14203a,#0c1628);border:1px solid #243855;border-top:2px solid #e8720c;border-radius:8px;padding:12px 10px;text-align:center;box-shadow:0 4px 20px rgba(232,114,12,.12)}
+.total-l1{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2a4060;margin-bottom:1px}
+.total-l2{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#e8720c;font-weight:600;margin-bottom:6px}
+.total-v{font-family:'Orbitron',monospace;font-size:36px;font-weight:900;color:#f59e0b;line-height:1;letter-spacing:-2px;text-shadow:0 0 20px rgba(245,158,11,.35)}
+.total-u{font-size:13px;color:#4a6080;margin-left:4px;font-family:'Exo 2',sans-serif}
+.total-sync{font-size:7px;letter-spacing:1px;color:#1a3050;margin-top:6px;text-transform:uppercase}
+
+/* SOMA */
+.soma-box{width:100%;background:rgba(8,12,22,.8);border:1px solid #16243a;border-radius:6px;padding:8px 12px;text-align:center}
+.soma-l{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2a4060;margin-bottom:3px}
+.soma-v{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;line-height:1}
+.soma-v span{font-size:10px;color:#2a4060;margin-left:3px;font-family:'Exo 2',sans-serif;font-weight:400}
+.soma-box.s1 .soma-v{color:#5b9bd5;text-shadow:0 0 10px rgba(91,155,213,.25)}
+.soma-box.s2 .soma-v{color:#f08030;text-shadow:0 0 10px rgba(240,128,48,.25)}
+
+/* FLUXO */
+.fluxo{display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 0}
+.fi{width:22px;height:22px;border-radius:4px;background:rgba(14,22,36,.9);border:1px solid #16243a;display:flex;align-items:center;justify-content:center;font-size:10px}
+.fa{color:#1a2e48;font-size:9px}
+.fluxo-sub{font-size:7px;letter-spacing:2px;color:#1a2e48;text-transform:uppercase;text-align:center;margin-top:-4px}
+
+/* EFIC */
+.efic-box{width:100%;background:rgba(6,10,18,.8);border:1px solid #16243a;border-radius:6px;padding:8px 10px}
+.efic-l{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2a4060;margin-bottom:6px}
+.efic-axis{display:flex;justify-content:space-between;margin-top:3px}
+.efic-axis span{font-size:7px;color:#1a2e48;font-family:monospace}
+
+/* FOOTER */
+footer{background:#04070e;border-top:1px solid #12203a;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:10px;color:#1a2e48}
+.ft-l{display:flex;align-items:center;gap:10px;color:#2a4a70}
+.pw{width:100px;height:2px;background:rgba(255,255,255,.04);border-radius:1px;overflow:hidden}
+.pb{height:100%;background:linear-gradient(90deg,#7a3a00,#e8720c);border-radius:1px;transition:width 1s linear}
+</style>
+</head>
+<body>
+
+<div id="ls">
+  <div class="ls-t">WAY2</div>
+  <div class="ls-s">Complexo GNA · Monitor Executivo</div>
+  <div class="ls-sp"></div>
+  <div class="ls-m" id="lsmsg">Conectando...</div>
+</div>
+
+<div class="app" id="app">
+  <div class="topo">
+    <div class="topo-titulo">Painel Executivo de Geração – Complexo GNA</div>
+    <div class="topo-barra">
+      <div class="topo-sync"><span class="sync-dot"></span>GNA Complex Performance Sync</div>
+      <div class="status-wrap">STATUS <div class="status-barra"><div class="status-fill"></div></div> 100%</div>
+      <div id="clk">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- GNA 1 -->
+    <div class="lado">
+      <div class="cx-hdr gna1">GNA 1</div>
+      <div class="tc gas">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Gás</span><div class="tc-dot s-ld" id="dot-GT11"></div></div>
+        <div class="tc-nome">GT11</div>
+        <div><span class="tc-mw v-ld" id="val-GT11">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-GT11" style="width:0%"></div></div>
+      </div>
+      <div class="tc gas">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Gás</span><div class="tc-dot s-ld" id="dot-GT12"></div></div>
+        <div class="tc-nome">GT12</div>
+        <div><span class="tc-mw v-ld" id="val-GT12">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-GT12" style="width:0%"></div></div>
+      </div>
+      <div class="tc gas">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Gás</span><div class="tc-dot s-ld" id="dot-GT13"></div></div>
+        <div class="tc-nome">GT13</div>
+        <div><span class="tc-mw v-ld" id="val-GT13">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-GT13" style="width:0%"></div></div>
+      </div>
+      <div class="tc vapor">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Vapor</span><div class="tc-dot s-ld" id="dot-ST10"></div></div>
+        <div class="tc-nome">ST10</div>
+        <div><span class="tc-mw v-ld" id="val-ST10">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-ST10" style="width:0%"></div></div>
+      </div>
+      <div class="mini-chart">
+        <div class="mc-lbl">Tendência de Geração (MW)</div>
+        <div class="mc-dest" id="mc-g1">– MW</div>
+        <canvas id="ch-g1" height="55" style="width:100%"></canvas>
+      </div>
+    </div>
+
+    <!-- CENTRO -->
+    <div class="centro">
+      <div class="total-box">
+        <div class="total-l1">Somatória GNA Total</div>
+        <div class="total-l2">GNA TOTAL (MW)</div>
+        <div><span class="total-v" id="total-mw">–</span><span class="total-u">MW</span></div>
+        <canvas id="ch-tot" height="36" style="width:100%;margin-top:8px"></canvas>
+        <div class="total-sync">Complexo GNA Performance Sync</div>
+      </div>
+      <div class="soma-box s1">
+        <div class="soma-l">Somatória GNA 1</div>
+        <div class="soma-v" id="soma-g1">–<span>MW</span></div>
+      </div>
+      <div class="fluxo">
+        <div class="fi">⚙️</div><div class="fa">→</div>
+        <div class="fi">📡</div><div class="fa">→</div>
+        <div class="fi">⚙️</div><div class="fa">→</div>
+        <div class="fi">🏭</div><div class="fa">→</div>
+        <div class="fi">🏗️</div>
+      </div>
+      <div class="fluxo-sub">Somatória Total</div>
+      <div class="soma-box s2">
+        <div class="soma-l">Somatória GNA 2</div>
+        <div class="soma-v" id="soma-g2">–<span>MW</span></div>
+      </div>
+      <div class="efic-box">
+        <div class="efic-l">Eficiência do Complexo GNA</div>
+        <canvas id="ch-efic" height="72" style="width:100%"></canvas>
+        <div class="efic-axis"><span>I</span><span>II</span><span>III</span><span>M</span><span>I</span><span>V</span><span>VI</span><span>M</span></div>
+      </div>
+      <div class="mini-chart" style="width:100%">
+        <div class="mc-lbl">Eficiência</div>
+        <div class="mc-dest" id="mc-ef">– MW</div>
+        <canvas id="ch-efic2" height="44" style="width:100%"></canvas>
+      </div>
+    </div>
+
+    <!-- GNA 2 -->
+    <div class="lado">
+      <div class="cx-hdr gna2">COMPLEXO GNA 2</div>
+      <div class="tc gas2">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Gás</span><div class="tc-dot s-ld" id="dot-GT21"></div></div>
+        <div class="tc-nome">GT21</div>
+        <div><span class="tc-mw v-ld" id="val-GT21">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-GT21" style="width:0%"></div></div>
+      </div>
+      <div class="tc gas2">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Gás</span><div class="tc-dot s-ld" id="dot-GT22"></div></div>
+        <div class="tc-nome">GT22</div>
+        <div><span class="tc-mw v-ld" id="val-GT22">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-GT22" style="width:0%"></div></div>
+      </div>
+      <div class="tc gas2">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Gás</span><div class="tc-dot s-ld" id="dot-GT23"></div></div>
+        <div class="tc-nome">GT23</div>
+        <div><span class="tc-mw v-ld" id="val-GT23">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-GT23" style="width:0%"></div></div>
+      </div>
+      <div class="tc vapor">
+        <div class="tc-top"><span class="tc-tipo">Turbina a Vapor</span><div class="tc-dot s-ld" id="dot-ST20"></div></div>
+        <div class="tc-nome">ST20</div>
+        <div><span class="tc-mw v-ld" id="val-ST20">…</span><span class="tc-un">MW</span></div>
+        <div class="tc-bar-bg"><div class="tc-bar b-ld" id="bar-ST20" style="width:0%"></div></div>
+      </div>
+      <div class="mini-chart">
+        <div class="mc-lbl">Tendência de Geração (MW)</div>
+        <div class="mc-dest" id="mc-g2">– MW</div>
+        <canvas id="ch-g2" height="55" style="width:100%"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="ft-l">↺ <span id="ft-txt">Aguardando...</span></div>
+    <div class="pw"><div class="pb" id="prog" style="width:100%"></div></div>
+    <div>GNA Complex Performance Sync · 10s</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── URL do proxy Vercel ──────────────────────────────
+// Após deploy na Vercel, substitua pela URL real:
+// Ex: https://way2-monitor.vercel.app
+const PROXY = 'https://way2-monitor-leandrosouza1234561.vercel.app';
+
+const MED={GNA1:[{id:'UTENovoTempo_UG01',nome:'GT11',tipo:'gas',nom:185},{id:'UTENovoTempo_UG02',nome:'GT12',tipo:'gas',nom:185},{id:'UTENovoTempo_UG03',nome:'GT13',tipo:'gas',nom:185},{id:'UTENovoTempo_UG04',nome:'ST10',tipo:'vapor',nom:353}],GNA2:[{id:'UTEGNAII_UG1',nome:'GT21',tipo:'gas2',nom:440},{id:'UTEGNAII_UG2',nome:'GT22',tipo:'gas2',nom:440},{id:'UTEGNAII_UG3',nome:'GT23',tipo:'gas2',nom:440},{id:'UTEGNAII_UG4',nome:'ST20',tipo:'vapor',nom:353}]};
+const R={};let cd=10,cdId=null;const CH={};
+
+setInterval(()=>document.getElementById('clk').textContent=new Date().toLocaleTimeString('pt-BR'),1000);
+
+function mkLine(id,color){return new Chart(document.getElementById(id),{type:'line',data:{labels:Array(20).fill(''),datasets:[{data:Array(20).fill(0),borderColor:color,borderWidth:1.5,fill:true,backgroundColor:color+'18',tension:.4,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}},animation:{duration:400}}})}
+function mkEfic(id){return new Chart(document.getElementById(id),{type:'line',data:{labels:['I','II','III','M','I','V','VI','M'],datasets:[{data:[88,90,92,91,93,91,94,95],borderColor:'#e8720c',borderWidth:1.5,fill:true,backgroundColor:'rgba(232,114,12,.1)',tension:.4,pointRadius:2,pointBackgroundColor:'#e8720c'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#1a2e48',font:{size:7}},grid:{color:'rgba(20,40,70,.5)'}},y:{min:70,max:100,ticks:{color:'#1a2e48',font:{size:7},callback:v=>v+'%'},grid:{color:'rgba(20,40,70,.5)'}}},animation:{duration:400}}})}
+function addPt(k,v){const c=CH[k];if(!c)return;c.data.datasets[0].data.push(v);if(c.data.datasets[0].data.length>20)c.data.datasets[0].data.shift();c.data.labels=c.data.datasets[0].data.map((_,i)=>i);c.update('none')}
+
+window.addEventListener('load',()=>{CH.tot=mkLine('ch-tot','#f59e0b');CH.g1=mkLine('ch-g1','#5b9bd5');CH.g2=mkLine('ch-g2','#e8720c');CH.efic=mkEfic('ch-efic');CH.efic2=mkEfic('ch-efic2')});
+
+async function init(){
+  setMsg('Conectando ao proxy...');
+  try{
+    const r=await fetch(`${PROXY}/api/proxy?path=status`,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.ok){
+      setMsg('Carregando dados...');
+      document.getElementById('ls').style.display='none';
+      document.getElementById('app').style.display='flex';
+      await fetchAll();setInterval(fetchAll,10000);startCD();
+    }else throw new Error('auth');
+  }catch(e){
+    setMsg('❌ Proxy offline. Verifique o deploy na Vercel.');
+  }
+}
+function setMsg(t){document.getElementById('lsmsg').textContent=t}
+
+async function fetchAll(){
+  document.getElementById('ft-txt').textContent='Buscando dados...';cd=10;
+  await Promise.allSettled([...MED.GNA1,...MED.GNA2].map(fetchOne));
+  updateUI();
+  document.getElementById('ft-txt').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR');
+}
+
+async function fetchOne(m){
+  const paths=[
+    `api/tempo-real/${m.id}?grandeza=MW`,
+    `api/v1/realtime?medidor=${m.id}&grandeza=MW`,
+    `api/leituras?medidor=${m.id}&grandeza=MW`,
+    `api/pontos/${m.id}/leitura`,
+  ];
+  for(const p of paths){
+    try{
+      const r=await fetch(`${PROXY}/api/proxy?path=${encodeURIComponent(p)}`,{signal:AbortSignal.timeout(6000)});
+      if(!r.ok)continue;
+      const d=await r.json();
+      const mw=extractMW(d);
+      if(mw!==null){R[m.id]={mw,status:'online',ts:new Date()};return;}
+    }catch{}
+  }
+  R[m.id]={mw:null,status:'offline',ts:new Date()};
+}
+
+function extractMW(d){
+  if(typeof d==='number')return d;
+  for(const k of['MW','mw','value','valor','leitura','medicao','potencia','active_power','pot_ativa']){if(d[k]!=null){const v=+d[k];if(!isNaN(v))return v;}}
+  if(Array.isArray(d)&&d.length)return extractMW(d[0]);
+  if(d.data)return extractMW(d.data);
+  return null;
+}
+
+function updateUI(){
+  let s1=0,s2=0;
+  MED.GNA1.forEach(m=>{const r=R[m.id];if(r?.status==='online'&&r.mw!=null)s1+=r.mw;updCard(m,r)});
+  MED.GNA2.forEach(m=>{const r=R[m.id];if(r?.status==='online'&&r.mw!=null)s2+=r.mw;updCard(m,r)});
+  const tot=s1+s2;
+  document.getElementById('total-mw').textContent=fmt(tot);
+  document.getElementById('soma-g1').innerHTML=fmt(s1)+'<span>MW</span>';
+  document.getElementById('soma-g2').innerHTML=fmt(s2)+'<span>MW</span>';
+  document.getElementById('mc-g1').textContent=fmt(s1)+' MW';
+  document.getElementById('mc-g2').textContent=fmt(s2)+' MW';
+  document.getElementById('mc-ef').textContent=fmt(tot)+' MW';
+  addPt('tot',tot);addPt('g1',s1);addPt('g2',s2);
+}
+
+function updCard(m,r){
+  const dot=document.getElementById(`dot-${m.nome}`);
+  const val=document.getElementById(`val-${m.nome}`);
+  const bar=document.getElementById(`bar-${m.nome}`);
+  if(!dot)return;
+  const st=r?.status||'loading';const mw=r?.mw??null;
+  const pct=mw!=null?Math.min(100,(mw/m.nom)*100).toFixed(1):0;
+  const sc=st==='online'?'on':st==='offline'?'of':'ld';
+  dot.className=`tc-dot s-${sc}`;
+  val.className=`tc-mw v-${sc}`;
+  val.textContent=mw!=null?fmt(mw):st==='offline'?'–':'…';
+  bar.className=`tc-bar b-${sc}`;bar.style.width=pct+'%';
+}
+
+function fmt(n){if(n==null||isNaN(n))return'–';return n.toLocaleString('pt-BR',{maximumFractionDigits:1})}
+function startCD(){cd=10;clearInterval(cdId);cdId=setInterval(()=>{cd--;document.getElementById('prog').style.width=((cd/10)*100)+'%';if(cd<=0)cd=10},1000)}
+init();
+</script>
+</body>
+</html>
